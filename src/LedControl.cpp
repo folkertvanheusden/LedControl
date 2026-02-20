@@ -43,15 +43,20 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
-LedControl::LedControl(int csPin, int numDevices) {
+LedControl::LedControl(int dataPin, int clkPin, int csPin, int numDevices) {
+    SPI_MOSI=dataPin;
+    SPI_CLK=clkPin;
     SPI_CS=csPin;
+    if(numDevices<=0 || numDevices>8 )
+        numDevices=8;
     maxDevices=numDevices;
-    pingMode(SPI_CS, OUTPUT);
+    pinMode(SPI_MOSI,OUTPUT);
+    pinMode(SPI_CLK,OUTPUT);
+    pinMode(SPI_CS,OUTPUT);
     digitalWrite(SPI_CS,HIGH);
-
+    SPI_MOSI=dataPin;
     for(int i=0;i<64;i++) 
         status[i]=0x00;
-
     for(int i=0;i<maxDevices;i++) {
         spiTransfer(i,OP_DISPLAYTEST,0);
         //scanlimit is set to max on startup
@@ -208,11 +213,10 @@ void LedControl::pushEverything(const uint8_t *const data)
   for(int i=0; i<8; i++) {
     byte command = i + OP_DIGIT0;
     int  offset  = i;
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     digitalWrite(SPI_CS, LOW);
     for(int k=maxDevices - 1; k>=0 ; k--) {
-      SPI.transfer(command);
-      SPI.transfer(data[offset + k * 8]);
+      shiftOut(SPI_MOSI, SPI_CLK, MSBFIRST, command);
+      shiftOut(SPI_MOSI, SPI_CLK, MSBFIRST, data[offset + k * 8]);
     }
     digitalWrite(SPI_CS, HIGH);
   }
