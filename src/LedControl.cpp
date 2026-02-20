@@ -46,7 +46,7 @@
 LedControl::LedControl(int csPin, int numDevices) {
     SPI_CS=csPin;
     maxDevices=numDevices;
-    pingMode(SPI_CS, OUTPUT);
+    pinMode(SPI_CS, OUTPUT);
     digitalWrite(SPI_CS,HIGH);
 
     for(int i=0;i<64;i++) 
