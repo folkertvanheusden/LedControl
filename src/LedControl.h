@@ -28,7 +28,6 @@
 #define LedControl_h
 
 #include <avr/pgmspace.h>
-#include <SPI.h>
 
 #if (ARDUINO >= 100)
 #include <Arduino.h>
@@ -68,6 +67,10 @@ class LedControl {
 
         /* We keep track of the led-status for all 8 devices in this array */
         byte status[64];
+        /* Data is shifted out of this pin*/
+        int SPI_MOSI;
+        /* The clock is signaled on this pin */
+        int SPI_CLK;
         /* This one is driven LOW for chip selectzion */
         int SPI_CS;
         /* The maximum number of devices we use */
