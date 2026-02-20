@@ -208,4 +208,16 @@ void LedControl::spiTransfer(int addr, volatile byte opcode, volatile byte data)
     digitalWrite(SPI_CS,HIGH);
 }    
 
-
+void LedControl::pushEverything(const uint8_t *const data)
+{
+  for(int i=0; i<8; i++) {
+    byte command = i + OP_DIGIT0;
+    int  offset  = i;
+    digitalWrite(SPI_CS, LOW);
+    for(int k=maxDevices - 1; k>=0 ; k--) {
+      shiftOut(SPI_MOSI, SPI_CLK, MSBFIRST, command);
+      shiftOut(SPI_MOSI, SPI_CLK, MSBFIRST, data[offset + k * 8]);
+    }
+    digitalWrite(SPI_CS, HIGH);
+  }
+}
