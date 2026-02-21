@@ -47,10 +47,10 @@
 
 void my_shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val) {
   for(byte i = 0; i < 8; i++) {
-    FAST_GPIO_WRITE(clockPin, HIGH);
+    FAST_GPIO_WRITE(clockPin, LOW);
     FAST_GPIO_WRITE(dataPin, val & 128);
     val <<= 1;
-    FAST_GPIO_WRITE(clockPin, LOW);
+    FAST_GPIO_WRITE(clockPin, HIGH);
   }
 }
 
