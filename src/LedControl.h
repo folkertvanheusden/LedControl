@@ -77,6 +77,7 @@ class LedControl {
         int maxDevices;
         const uint32_t cmask;
         const uint32_t dmask;
+        const uint32_t smask;
 
 	void my_shiftOut(uint8_t val);
 

@@ -43,8 +43,9 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
+volatile uint32_t *pGPO[2] { &GPOC, &GPOS };
+
 void LedControl::my_shiftOut(uint8_t val) {
-  volatile uint32_t *pGPO[2] { &GPOC, &GPOS };
   for(byte i = 0; i < 8; i++) {
     *pGPO[0] = cmask;
     *pGPO[!!(val & 128)] = dmask;
@@ -54,7 +55,7 @@ void LedControl::my_shiftOut(uint8_t val) {
 }
 
 LedControl::LedControl(int dataPin, int clkPin, int csPin, int numDevices):
-	cmask(1 << clkPin), dmask(1 << dataPin)
+	cmask(1 << clkPin), dmask(1 << dataPin), smask(1 << csPin)
 {
     SPI_MOSI=dataPin;
     SPI_CLK=clkPin;
@@ -65,7 +66,7 @@ LedControl::LedControl(int dataPin, int clkPin, int csPin, int numDevices):
     pinMode(SPI_MOSI,OUTPUT);
     pinMode(SPI_CLK,OUTPUT);
     pinMode(SPI_CS,OUTPUT);
-    digitalWrite(SPI_CS,HIGH);
+    *pGPO[1] = smask;
     SPI_MOSI=dataPin;
     for(int i=0;i<64;i++) 
         status[i]=0x00;
@@ -212,12 +213,12 @@ void LedControl::spiTransfer(int addr, volatile byte opcode, volatile byte data)
     spidata[offset+1]=opcode;
     spidata[offset]=data;
     //enable the line 
-    digitalWrite(SPI_CS,LOW);
+    *pGPO[0] = smask;
     //Now shift out the data 
     for(int i=maxbytes;i>0;i--)
       my_shiftOut(spidata[i-1]);
     //latch the data onto the display
-    digitalWrite(SPI_CS,HIGH);
+    *pGPO[1] = smask;
 }    
 
 void LedControl::pushEverything(const uint8_t *const data)
@@ -225,11 +226,11 @@ void LedControl::pushEverything(const uint8_t *const data)
   for(int i=0; i<8; i++) {
     byte command = i + OP_DIGIT0;
     int  offset  = i;
-    digitalWrite(SPI_CS, LOW);
+    *pGPO[0] = smask;
     for(int k=maxDevices - 1; k>=0 ; k--) {
       my_shiftOut(command);
       my_shiftOut(data[offset + k * 8]);
     }
-    digitalWrite(SPI_CS, HIGH);
+    *pGPO[1] = smask;
   }
 }
