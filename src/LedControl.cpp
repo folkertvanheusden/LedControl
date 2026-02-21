@@ -43,14 +43,16 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
-#define FAST_GPIO_WRITE(pin, val) if (val) GPOS = 1<<(pin); else GPOC = 1<<(pin)
+// MSBFIRST only
+void my_shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t val) {
+  uint8_t clock_mask = 1 << clockPin;
+  uint8_t data_mask  = 1 << dataPin;
 
-void my_shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val) {
   for(byte i = 0; i < 8; i++) {
-    FAST_GPIO_WRITE(clockPin, HIGH);
-    FAST_GPIO_WRITE(dataPin, val & 128);
+    GPOC = clock_mask;
+    (val & 128 ? GPOS : GPOC) = data_mask;
     val <<= 1;
-    FAST_GPIO_WRITE(clockPin, LOW);
+    GPOS = clock_mask;
   }
 }
 
@@ -214,7 +216,7 @@ void LedControl::spiTransfer(int addr, volatile byte opcode, volatile byte data)
     digitalWrite(SPI_CS,LOW);
     //Now shift out the data 
     for(int i=maxbytes;i>0;i--)
-      my_shiftOut(SPI_MOSI,SPI_CLK,MSBFIRST,spidata[i-1]);
+      my_shiftOut(SPI_MOSI,SPI_CLK,spidata[i-1]);
     //latch the data onto the display
     digitalWrite(SPI_CS,HIGH);
 }    
@@ -226,8 +228,8 @@ void LedControl::pushEverything(const uint8_t *const data)
     int  offset  = i;
     digitalWrite(SPI_CS, LOW);
     for(int k=maxDevices - 1; k>=0 ; k--) {
-      my_shiftOut(SPI_MOSI, SPI_CLK, MSBFIRST, command);
-      my_shiftOut(SPI_MOSI, SPI_CLK, MSBFIRST, data[offset + k * 8]);
+      my_shiftOut(SPI_MOSI, SPI_CLK, command);
+      my_shiftOut(SPI_MOSI, SPI_CLK, data[offset + k * 8]);
     }
     digitalWrite(SPI_CS, HIGH);
   }
