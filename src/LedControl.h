@@ -75,6 +75,10 @@ class LedControl {
         int SPI_CS;
         /* The maximum number of devices we use */
         int maxDevices;
+        const uint32_t cmask;
+        const uint32_t dmask;
+
+	void my_shiftOut(uint8_t val);
 
     public:
         /* 
