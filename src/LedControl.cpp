@@ -70,6 +70,9 @@ LedControl::LedControl(int dataPin, int clkPin, int csPin, int numDevices):
     SPI_MOSI=dataPin;
     for(int i=0;i<64;i++) 
         status[i]=0x00;
+}
+
+void LedControl::begin() {
     for(int i=0;i<maxDevices;i++) {
         spiTransfer(i,OP_DISPLAYTEST,0);
         //scanlimit is set to max on startup

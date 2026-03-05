@@ -92,6 +92,8 @@ class LedControl {
          */
         LedControl(int dataPin, int clkPin, int csPin, int numDevices=1);
 
+	void begin();
+
         /*
          * Gets the number of devices attached to this LedControl.
          * Returns :
